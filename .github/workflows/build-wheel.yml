@@ -1,6 +1,5 @@
 name: Build Termux Python Wheels (Boss Mode)
 
-# তুই চাইলে গিটহাব ওয়েবসাইট থেকে ম্যানুয়ালি বোতাম টিপে এটা চালাতে পারবি (workflow_dispatch)
 on:
   workflow_dispatch:
     inputs:
@@ -21,13 +20,15 @@ jobs:
 
       - name: 🚀 Build Wheel inside Termux Environment
         run: |
-          # Termux-এর aarch64 ডকার ইমেজ নামিয়ে তার ভেতর বিল্ড করা হচ্ছে
+          # ghcr.io সরিয়ে সরাসরি Docker Hub থেকে পাবলিক ইমেজ নেওয়া হচ্ছে
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            ghcr.io/termux/termux-docker:aarch64 \
+            termux/termux-docker:aarch64 \
             bash -c "pkg update -y && \
                      pkg install -y python rust binutils clang make && \
+                     export ANDROID_API_LEVEL=24 && \
+                     export CARGO_BUILD_TARGET=aarch64-linux-android && \
                      pip wheel ${{ github.event.inputs.package_name }} --no-cache-dir"
 
       - name: 📦 Upload Wheel as Artifact
